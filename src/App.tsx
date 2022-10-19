@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import {MagnifySvg} from './assets/magnify';
@@ -39,17 +40,25 @@ const App = () => {
     }).start(() => spin());
   };
 
-  function handleChangeText(text: string) {
-    setIsLoading(false);
-    setTextValue(text);
-    if (text.length > 2) {
+  const debouncedValue = useCallback(
+    useDebounce((text: string) => {
       dispatch(getCompanies(text));
-    }
+    }, 800),
+    [],
+  );
+
+  function handleChangeText(text: string) {
+    setIsLoading(true);
+    setTextValue(text);
+    debouncedValue(text);
+    setIsLoading(false);
   }
-  const debouncedValue = useDebounce(handleChangeText, 300, setIsLoading);
+
+  useEffect(() => {
+    getCompanies(textValue);
+  }, [textValue]);
 
   const companiesSelector = (company: TCompany) => {
-    setTextValue(company.name);
     return (
       <>
         {isLoading ? (
@@ -61,12 +70,13 @@ const App = () => {
             </Animated.View>
           </View>
         ) : (
-          <View
+          <TouchableOpacity
             style={{
               alignItems: 'center',
               width: '100%',
               flexDirection: 'row',
-            }}>
+            }}
+            onPress={() => setTextValue(company.name)}>
             <Image
               style={styles.logo}
               source={{
@@ -86,7 +96,7 @@ const App = () => {
                 {company.domain}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
       </>
     );
@@ -110,10 +120,11 @@ const App = () => {
           <TextInput
             selectionColor={'#000000'}
             cursorColor={'#000000'}
-            onChangeText={debouncedValue}
+            onChangeText={handleChangeText}
             placeholder={'Enter company'}
             placeholderTextColor={'#E5E5E5'}
             style={styles.input}
+            value={textValue}
           />
           {isLoading ? (
             <View
