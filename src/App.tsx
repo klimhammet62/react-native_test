@@ -101,7 +101,7 @@ const App = () => {
       </>
     );
   };
-  
+
   const rotate = spinValue.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
@@ -112,16 +112,19 @@ const App = () => {
       <View style={styles.appWrapper}>
         <Text>Компания</Text>
         <View style={styles.formWrapper}>
-          {/* <MagnifySvg style={styles.magnifySvg} /> */}
-          <TextInput
-            selectionColor={'#000000'}
-            cursorColor={'#000000'}
-            onChangeText={handleChangeText}
-            placeholder={'Enter company'}
-            placeholderTextColor={'#E5E5E5'}
-            style={styles.input}
-            value={textValue}
-          />
+          <View style={styles.inputWrapper}>
+            <MagnifySvg style={styles.magnifySvg} />
+            <TextInput
+              selectionColor={'#000000'}
+              cursorColor={'#000000'}
+              onChangeText={handleChangeText}
+              placeholder={'Enter company'}
+              placeholderTextColor={'#E5E5E5'}
+              style={styles.input}
+              value={textValue}
+            />
+          </View>
+
           {isLoading ? (
             <View
               style={{
@@ -197,16 +200,26 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     justifyContent: 'center',
   },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 42,
+    borderWidth: 1,
+    paddingHorizontal: 5,
+    paddingBottom: 15,
+    borderColor: '#E5E5E5',
+    borderRadius: 6,
+  },
   input: {
+    flex: 1,
     width: '100%',
+    height: '160%',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'stretch',
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 6,
     padding: 10,
+    marginTop: 14,
+    borderWidth: 0,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
   },
@@ -218,6 +231,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
     height: 25,
     width: 25,
+    alignItems: 'flex-start',
     resizeMode: 'stretch',
   },
   loaderSvg: {
