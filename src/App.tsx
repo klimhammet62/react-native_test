@@ -26,7 +26,6 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
   const companies = useAppSelector((state: any) => state.companies.companies);
-  const company = useAppSelector((state: any) => state.companies.company);
   const keyExtractor = useCallback(() => nanoid(), []);
   const spinValue = new Animated.Value(0);
 
@@ -43,6 +42,7 @@ const App = () => {
   const debouncedValue = useCallback(
     useDebounce((text: string) => {
       dispatch(getCompanies(text));
+      setIsLoading(false);
     }, 800),
     [],
   );
@@ -51,10 +51,10 @@ const App = () => {
     setIsLoading(true);
     setTextValue(text);
     debouncedValue(text);
-    setIsLoading(false);
   }
 
   useEffect(() => {
+    spin();
     getCompanies(textValue);
   }, [textValue]);
 
@@ -101,11 +101,7 @@ const App = () => {
       </>
     );
   };
-
-  useEffect(() => {
-    spin();
-  }, []);
-
+  
   const rotate = spinValue.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
