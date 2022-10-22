@@ -1,43 +1,20 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {
-  Animated,
-  Easing,
-  FlatList,
-  Image,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {SafeAreaView, StyleSheet, Text, TextInput, View} from 'react-native';
 import {MagnifySvg} from './assets/magnify';
-import {CircleExample} from './assets/circle';
 import {TCompany} from './types/companyService';
 import {useDebounce} from './hooks/useDebounce';
 import 'react-native-get-random-values';
-import {nanoid} from 'nanoid';
-import {getCompanies, selectCompany} from './redux/companiesReducer';
+import {getCompanies} from './redux/companiesReducer';
 import {useAppDispatch, useAppSelector} from './hooks/redux';
+import {spin} from './ui/Loader';
+import {CompaniesList} from './components/CompaniesList';
+import {Company} from './components/Company';
 
 const App = () => {
   const [textValue, setTextValue] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
   const companies = useAppSelector((state: any) => state.companies.companies);
-  const keyExtractor = useCallback(() => nanoid(), []);
-  const spinValue = new Animated.Value(0);
-
-  const spin = () => {
-    spinValue.setValue(0);
-    Animated.timing(spinValue, {
-      toValue: 1,
-      duration: 700,
-      easing: Easing.linear,
-      useNativeDriver: true,
-    }).start(() => spin());
-  };
 
   const debouncedValue = useCallback(
     useDebounce((text: string) => {
@@ -60,52 +37,13 @@ const App = () => {
 
   const companiesSelector = (company: TCompany) => {
     return (
-      <>
-        {isLoading ? (
-          <View style={{marginTop: 50}}>
-            <Animated.View style={{transform: [{rotate}]}}>
-              <View style={{justifyContent: 'center', alignItems: 'center'}}>
-                <CircleExample style={styles.loaderSvg} />
-              </View>
-            </Animated.View>
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={{
-              alignItems: 'center',
-              width: '100%',
-              flexDirection: 'row',
-            }}
-            onPress={() => setTextValue(company.name)}>
-            <Image
-              style={styles.logo}
-              source={{
-                uri: `${company.logo}`,
-              }}
-            />
-            <View
-              style={{
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                marginLeft: 14,
-              }}>
-              <Text style={{color: '#000000', fontSize: 14}}>
-                {company.name}
-              </Text>
-              <Text style={{fontSize: 12, color: '#9F9F9F'}}>
-                {company.domain}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        )}
-      </>
+      <Company
+        company={company}
+        isLoading={isLoading}
+        setTextValue={setTextValue}
+      />
     );
   };
-
-  const rotate = spinValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -124,64 +62,12 @@ const App = () => {
               value={textValue}
             />
           </View>
-
-          {isLoading ? (
-            <View
-              style={{
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <Animated.View style={{transform: [{rotate}]}}>
-                <View style={{justifyContent: 'center', alignItems: 'center'}}>
-                  <CircleExample style={styles.loaderSvg} />
-                </View>
-              </Animated.View>
-            </View>
-          ) : (
-            <>
-              {textValue && companies.length ? (
-                <View style={[styles.dataCard, styles.elevation]}>
-                  <FlatList
-                    data={companies}
-                    keyExtractor={keyExtractor}
-                    renderItem={({item}) => {
-                      return (
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            padding: 15,
-                          }}>
-                          <View
-                            style={{
-                              flexShrink: 1,
-                              width: '100%',
-                            }}>
-                            <Pressable
-                              style={({pressed}) => [
-                                {
-                                  opacity: pressed ? 0.5 : 1,
-                                  backgroundColor: pressed
-                                    ? '#E5E5E5'
-                                    : 'white',
-                                },
-                              ]}
-                              onPress={() => {
-                                dispatch(selectCompany(item));
-                              }}>
-                              {companiesSelector(item)}
-                            </Pressable>
-                          </View>
-                        </View>
-                      );
-                    }}
-                  />
-                </View>
-              ) : (
-                <Text>Not found</Text>
-              )}
-            </>
-          )}
+          <CompaniesList
+            selector={companiesSelector}
+            isLoading={isLoading}
+            companies={companies}
+            textValue={textValue}
+          />
         </View>
       </View>
     </SafeAreaView>
@@ -233,33 +119,6 @@ const styles = StyleSheet.create({
     width: 25,
     alignItems: 'flex-start',
     resizeMode: 'stretch',
-  },
-  loaderSvg: {
-    fill: '#E5E5D5',
-    padding: 10,
-    margin: 5,
-    height: 25,
-    width: 25,
-    resizeMode: 'stretch',
-  },
-  logo: {
-    height: 54,
-    width: 54,
-    marginLeft: 16,
-  },
-  dataCard: {
-    width: '100%',
-    borderBottomWidth: 1.2,
-    borderLeftWidth: 1.2,
-    borderRightWidth: 1.2,
-    borderColor: '#E5E5E5',
-    borderBottomLeftRadius: 6,
-    borderBottomRightRadius: 6,
-    backgroundColor: 'white',
-  },
-  elevation: {
-    shadowColor: '#000',
-    elevation: 12,
   },
   hovered: {
     backgroundColor: 'grey',
